@@ -1,0 +1,407 @@
+{% extends "base.html" %}
+
+{% block title %}Training - PredictIMMO{% endblock %}
+
+{% block content %}
+
+<style>
+    .step-bar {
+        display: flex;
+        gap: 8px;
+        margin: 24px 0;
+        flex-wrap: wrap;
+    }
+
+    .step-pill {
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        border: 2px solid #dee2e6;
+        color: #adb5bd;
+        background: white;
+        transition: all 0.3s;
+    }
+
+    .step-pill.active {
+        border-color: #31e892;
+        color: #1a9e62;
+        background: rgba(49,232,146,0.08);
+    }
+
+    .step-pill.done {
+        border-color: #28a745;
+        color: white;
+        background: #28a745;
+    }
+
+    .training-card {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 12px;
+        padding: 28px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+
+    .training-card .card-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #212529;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .upload-zone {
+        border: 2px dashed #dee2e6;
+        border-radius: 10px;
+        padding: 40px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+        position: relative;
+    }
+
+    .upload-zone:hover, .upload-zone.dragover {
+        border-color: #31e892;
+        background: rgba(49,232,146,0.04);
+    }
+
+    .upload-zone input[type="file"] {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+        width: 100%;
+        height: 100%;
+    }
+
+    .upload-icon { font-size: 40px; margin-bottom: 10px; }
+
+    .file-badge {
+        display: none;
+        margin-top: 14px;
+        padding: 8px 16px;
+        background: rgba(49,232,146,0.1);
+        border: 1px solid #31e892;
+        border-radius: 8px;
+        color: #1a9e62;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .scores-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 20px;
+    }
+
+    @media (max-width: 576px) { .scores-grid { grid-template-columns: 1fr; } }
+
+    .score-block {
+        border: 2px solid #dee2e6;
+        border-radius: 10px;
+        padding: 20px;
+        position: relative;
+    }
+
+    .score-block.winner { border-color: #28a745; background: rgba(40,167,69,0.04); }
+    .score-block.loser  { border-color: #dc3545; background: rgba(220,53,69,0.03); }
+
+    .winner-badge {
+        position: absolute;
+        top: -12px; right: 12px;
+        background: #28a745;
+        color: white;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 10px;
+    }
+
+    .score-label {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #6c757d;
+        margin-bottom: 14px;
+    }
+
+    .score-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #f1f1f1;
+        font-size: 14px;
+    }
+
+    .score-row:last-child { border-bottom: none; }
+    .score-name { color: #6c757d; }
+    .score-val { font-weight: 700; }
+    .score-val.better { color: #28a745; }
+    .score-val.worse  { color: #dc3545; }
+
+    .model-option {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        border: 2px solid #dee2e6;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 14px;
+        font-weight: normal;
+    }
+
+    .model-option:hover { border-color: #31e892; background: rgba(49,232,146,0.04); }
+    .model-option.selected { border-color: #31e892; background: rgba(49,232,146,0.06); }
+    .model-option input[type="radio"] { accent-color: #31e892; }
+
+    .badge-current {
+        margin-left: auto;
+        background: rgba(49,232,146,0.15);
+        color: #1a9e62;
+        border: 1px solid #31e892;
+        padding: 2px 10px;
+        border-radius: 8px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .badge-new {
+        margin-left: auto;
+        background: rgba(108,92,231,0.1);
+        color: #6c5ce7;
+        border: 1px solid #6c5ce7;
+        padding: 2px 10px;
+        border-radius: 8px;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    .loader {
+        display: none;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        background: #f8f9fa;
+        border-radius: 8px;
+        margin-top: 14px;
+        font-size: 13px;
+        color: #495057;
+    }
+
+    .spinner-sm {
+        width: 16px; height: 16px;
+        border: 2px solid #dee2e6;
+        border-top-color: #31e892;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        flex-shrink: 0;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+
+<div class="mt-4">
+
+    <h2 class="mb-1">🧪 Réentraînement du modèle</h2>
+    <p class="text-muted mb-3">Outil réservé aux data scientists — importez de nouvelles données et comparez les performances.</p>
+
+    <!-- Barre de progression -->
+    <div class="step-bar">
+        <div class="step-pill active" id="step1">① Upload</div>
+        <div class="step-pill" id="step2">② Réentraînement</div>
+        <div class="step-pill" id="step3">③ Comparaison</div>
+        <div class="step-pill" id="step4">④ Décision</div>
+    </div>
+
+    <!-- CARTE 1 : Upload -->
+    <div class="training-card">
+        <div class="card-title">📂 Charger un nouveau jeu de données</div>
+
+        <div class="upload-zone" id="upload-zone">
+            <input type="file" id="file-input" accept=".csv">
+            <div class="upload-icon">⬆️</div>
+            <p class="mb-1"><strong>Glissez votre fichier CSV ici</strong></p>
+            <p class="text-muted" style="font-size:13px">ou cliquez pour parcourir — même format que housing_1.csv</p>
+        </div>
+
+        <div class="file-badge" id="file-badge">
+            ✅ Fichier sélectionné : <span id="file-name"></span>
+        </div>
+
+        <div class="mt-3">
+            <button class="btn btn-success" id="btn-train" onclick="uploadAndTrain()" disabled>
+                🚀 Lancer le réentraînement
+            </button>
+        </div>
+
+        <div class="loader" id="loader">
+            <div class="spinner-sm"></div>
+            Réentraînement en cours, veuillez patienter...
+        </div>
+    </div>
+
+    <!-- CARTE 2 : Scores -->
+    <div class="training-card d-none" id="card-scores">
+        <div class="card-title">📊 Comparaison des performances</div>
+
+        <div class="scores-grid" id="scores-grid"></div>
+
+        <hr>
+
+        <div class="card-title">🎯 Sélectionner le modèle à utiliser</div>
+
+        <label class="model-option selected" id="opt-old" onclick="selectModel('old', this)">
+            <input type="radio" name="model-choice" value="old" checked>
+            <span id="old-model-label">model_ramdomforest.joblib</span>
+            <span class="badge-current">ACTUEL</span>
+        </label>
+
+        <label class="model-option" id="opt-new" onclick="selectModel('new', this)">
+            <input type="radio" name="model-choice" value="new">
+            <span id="new-model-label">—</span>
+            <span class="badge-new">NOUVEAU</span>
+        </label>
+    </div>
+
+    <!-- CARTE 3 : Décision -->
+    <div class="training-card d-none" id="card-decision">
+        <div class="card-title">💾 Valider et enregistrer</div>
+        <p class="text-muted mb-3" style="font-size:14px">
+            Les deux modèles sont sauvegardés. Choisissez lequel sera utilisé comme modèle principal pour les prédictions clients.
+        </p>
+
+        <button class="btn btn-success mr-2" onclick="saveDecision('new')">✅ Utiliser le nouveau modèle</button>
+        <button class="btn btn-danger mr-2" onclick="saveDecision('old')">🔄 Conserver l'ancien modèle</button>
+        <button class="btn btn-secondary" onclick="location.reload()">↺ Recommencer</button>
+
+        <div class="alert alert-success mt-3 d-none" id="alert-success"></div>
+        <div class="alert alert-info mt-3 d-none" id="alert-info"></div>
+    </div>
+
+</div>
+
+<script>
+    let newModelName = null;
+
+    const uploadZone = document.getElementById("upload-zone");
+    const fileInput  = document.getElementById("file-input");
+
+    uploadZone.addEventListener("dragover", e => { e.preventDefault(); uploadZone.classList.add("dragover"); });
+    uploadZone.addEventListener("dragleave", () => uploadZone.classList.remove("dragover"));
+    uploadZone.addEventListener("drop", e => {
+        e.preventDefault();
+        uploadZone.classList.remove("dragover");
+        fileInput.files = e.dataTransfer.files;
+        handleFileSelect();
+    });
+    fileInput.addEventListener("change", handleFileSelect);
+
+    function handleFileSelect() {
+        if (fileInput.files.length) {
+            document.getElementById("file-name").textContent = fileInput.files[0].name;
+            document.getElementById("file-badge").style.display = "block";
+            document.getElementById("btn-train").disabled = false;
+        }
+    }
+
+    function setStep(n) {
+        ["step1","step2","step3","step4"].forEach((id, i) => {
+            const el = document.getElementById(id);
+            el.className = "step-pill";
+            if (i + 1 < n) el.classList.add("done");
+            else if (i + 1 === n) el.classList.add("active");
+        });
+    }
+
+    async function uploadAndTrain() {
+        document.getElementById("loader").style.display = "flex";
+        document.getElementById("btn-train").disabled = true;
+        setStep(2);
+
+        const formData = new FormData();
+        formData.append("dataset", fileInput.files[0]);
+
+        try {
+            const response = await fetch("/training/upload", { method: "POST", body: formData });
+            const data = await response.json();
+
+            document.getElementById("loader").style.display = "none";
+            newModelName = data.new_model_name;
+            document.getElementById("new-model-label").textContent = newModelName;
+
+            displayScores(data);
+            setStep(3);
+        } catch (err) {
+            document.getElementById("loader").style.display = "none";
+            document.getElementById("btn-train").disabled = false;
+            alert("Erreur : " + err.message);
+        }
+    }
+
+    function displayScores(data) {
+        const rmseWinner = data.new.rmse < data.old.rmse ? "new" : "old";
+        const r2Winner   = data.new.r2   > data.old.r2   ? "new" : "old";
+        const newWins = rmseWinner === "new" && r2Winner === "new";
+        const oldWins = rmseWinner === "old" && r2Winner === "old";
+
+        document.getElementById("scores-grid").innerHTML = `
+            <div class="score-block ${oldWins ? 'winner' : 'loser'}">
+                ${oldWins ? '<div class="winner-badge">⭐ MEILLEUR</div>' : ''}
+                <div class="score-label">Ancien modèle</div>
+                <div class="score-row"><span class="score-name">RMSE ↓</span><span class="score-val ${rmseWinner==='old'?'better':'worse'}">${data.old.rmse}</span></div>
+                <div class="score-row"><span class="score-name">R² ↑</span><span class="score-val ${r2Winner==='old'?'better':'worse'}">${data.old.r2}</span></div>
+            </div>
+            <div class="score-block ${newWins ? 'winner' : 'loser'}">
+                ${newWins ? '<div class="winner-badge">⭐ MEILLEUR</div>' : ''}
+                <div class="score-label">Nouveau modèle</div>
+                <div class="score-row"><span class="score-name">RMSE ↓</span><span class="score-val ${rmseWinner==='new'?'better':'worse'}">${data.new.rmse}</span></div>
+                <div class="score-row"><span class="score-name">R² ↑</span><span class="score-val ${r2Winner==='new'?'better':'worse'}">${data.new.r2}</span></div>
+            </div>
+        `;
+
+        document.getElementById("card-scores").classList.remove("d-none");
+        document.getElementById("card-decision").classList.remove("d-none");
+    }
+
+    function selectModel(choice, el) {
+        document.querySelectorAll(".model-option").forEach(o => o.classList.remove("selected"));
+        el.classList.add("selected");
+    }
+
+    async function saveDecision(choice) {
+        try {
+            await fetch("/training/confirm", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ model_name: newModelName, activate: choice })
+            });
+
+            if (choice === "new") {
+                const el = document.getElementById("alert-success");
+                el.textContent = "✅ Nouveau modèle activé et enregistré comme modèle principal.";
+                el.classList.remove("d-none");
+                document.getElementById("alert-info").classList.add("d-none");
+            } else {
+                const el = document.getElementById("alert-info");
+                el.textContent = "ℹ️ Ancien modèle conservé. Le nouveau reste disponible en archive.";
+                el.classList.remove("d-none");
+                document.getElementById("alert-success").classList.add("d-none");
+            }
+
+            setStep(4);
+        } catch (err) {
+            alert("Erreur : " + err.message);
+        }
+    }
+</script>
+
+{% endblock %}

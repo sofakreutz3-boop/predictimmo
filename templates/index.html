@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block content %}
+   {% for post in posts %}
+        <a href="#">
+            <h2>{{ post['title'] }}</h2>
+        </a>
+        <span class="badge badge-primary">{{ post['created'] }}</span>
+        <hr>
+    {% endfor %}
+
+
+
+<!-- HERO -->
+<div class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+        <h1> 🏡 Bienvenue sur PredictIMMO </h1>
+        <h1>Estimez votre bien<br>en <span>1 clic</span></h1>
+        <p>PredictIMMO utilise un modèle d'intelligence artificielle entraîné sur des milliers de transactions californiennes pour vous donner une estimation précise et instantanée.</p>
+        <div class="hero-buttons">
+            <a href="/prediction" class="btn-hero-primary">✨ Estimer mon bien</a>
+            <a href="/dashbord" class="btn-hero-ghost">📊 Voir le marché</a>
+        </div>
+    </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-bar">
+    <div class="stat-item">
+        <div class="stat-number">{{ nb_transactions }}<span>+</span></div>
+        <div class="stat-label">Transactions analysées</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-number"><span>~</span>{{ r2 }}<span>%</span></div>
+        <div class="stat-label">Précision du modèle (R²)</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-number">1<span>clic</span></div>
+        <div class="stat-label">Pour une estimation complète</div>
+    </div>
+</div>
+
+<!-- FEATURES -->
+<div class="mb-5">
+    <h2 class="section-title">Tout ce dont vous avez besoin</h2>
+    <p class="section-sub">Une plateforme complète pour estimer, analyser et comprendre le marché immobilier californien.</p>
+
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="feature-card">
+                <span class="feature-icon">🤖</span>
+                <div class="feature-title">Estimation IA</div>
+                <p class="feature-text">Renseignez les caractéristiques de votre bien et obtenez une estimation basée sur un modèle Random Forest entraîné sur des données réelles.</p>
+                <a href="/prediction" class="feature-link">Faire une estimation →</a>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="feature-card">
+                <span class="feature-icon">📊</span>
+                <div class="feature-title">Dashboard marché</div>
+                <p class="feature-text">Visualisez les tendances du marché, les prix par zone géographique et les corrélations entre les variables clés.</p>
+                <a href="/dashbord" class="feature-link">Explorer le dashboard →</a>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="feature-card">
+                <span class="feature-icon">🔬</span>
+                <div class="feature-title">Réentraînement</div>
+                <p class="feature-text">Les data scientists peuvent mettre à jour le modèle avec de nouvelles données et comparer les performances avant de valider.</p>
+                <a href="/training" class="feature-link">Accéder au training →</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- PHOTO GRID -->
+<div class="photo-grid">
+    <div class="main-photo">
+        <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&q=80" alt="Maison californienne">
+    </div>
+    <div class="sub-photo">
+        <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80" alt="Vue aérienne quartier">
+    </div>
+    <div class="sub-photo">
+        <img src="https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=400&q=80" alt="Maison moderne">
+    </div>
+</div>
+
+{% endblock %}
