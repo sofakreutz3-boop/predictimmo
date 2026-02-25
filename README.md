@@ -181,4 +181,4 @@ L'application est accessible sur : [http://127.0.0.1:5000](http://127.0.0.1:5000
 
 ## 👨‍💻 Auteur
 
-Projet réalisé par E.SOFACK dans le cadre d'une alternance Data Analyst 
+Projet réalisé par E.SOFACK dans le cadre du module manger la donnée - M1 Data Manager
